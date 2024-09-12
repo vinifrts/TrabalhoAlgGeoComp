@@ -1,0 +1,134 @@
+public class LinearAlgebra {
+
+    // matriz transposta (vinicius)
+    public static Matrix transpose(Matrix a) {
+        Matrix result = new Matrix(a.cols, a.rows, new double[a.cols * a.rows]);
+        for (int i = 0; i < a.rows; i++) {
+            for (int j = 0; j < a.cols; j++) {
+                result.set(j, i, a.get(i, j));
+            }
+        }
+        return result;
+    }
+
+    //  sum (kaue)
+    public static Matrix sum(Matrix a, Matrix b) {
+        if (a.rows != b.rows || a.cols != b.cols) {
+            throw new IllegalArgumentException("As matrizes devem ter o mesmo tamanho.");
+        }
+        Matrix result = new Matrix(a.rows, a.cols, new double[a.rows * a.cols]);
+        for (int i = 0; i < a.rows; i++) {
+            for (int j = 0; j < a.cols; j++) {
+                result.set(i, j, a.get(i, j) + b.get(i, j));
+            }
+        }
+        return result;
+    }
+
+    //  times (kaue)
+    public static Matrix times(Matrix a, Object b) {
+        Matrix result = new Matrix(a.rows, a.cols, new double[a.rows * a.cols]);
+
+        // verificando se b é um número ou uma matriz
+        if (b instanceof Double) {
+            // multiplicação escalar
+            double scalar = 2;
+            for (int i = 0; i < a.rows; i++) {
+                for (int j = 0; j < a.cols; j++) {
+                    result.set(i, j, a.get(i, j) * scalar);
+                }
+            }
+        } else if (b instanceof Matrix) {
+            // termo a termo
+            Matrix matrixB = (Matrix) b;
+            if (a.rows != matrixB.rows || a.cols != matrixB.cols) {
+                throw new IllegalArgumentException("As matrizes devem ter o mesmo tamanho.");
+            }
+            for (int i = 0; i < a.rows; i++) {
+                for (int j = 0; j < a.cols; j++) {
+                    result.set(i, j, a.get(i, j) * matrixB.get(i, j));
+                }
+            }
+        } else {
+            throw new IllegalArgumentException("O segundo parâmetro deve ser um escalar ou uma matriz.");
+        }
+
+        return result;
+    }
+
+
+    //  dot (vinicius)
+    public static Matrix dot(Matrix a, Matrix b) {
+        if (a.cols != b.rows) {
+            throw new IllegalArgumentException("Número de colunas de A deve ser igual ao número de linhas de B.");
+        }
+        Matrix result = new Matrix(a.rows, b.cols, new double[a.rows * b.cols]);
+        for (int i = 0; i < a.rows; i++) {
+            for (int j = 0; j < b.cols; j++) {
+                double sum = 0;
+                for (int k = 0; k < a.cols; k++) {
+                    sum += a.get(i, k) * b.get(k, j);
+                }
+                result.set(i, j, sum);
+            }
+        }
+        return result;
+    }
+
+    //  gauss (naoki)
+    public static Matrix gauss(Matrix a) {
+        int n = a.rows;
+        Matrix result = new Matrix(n, a.cols, new double[n * a.cols]);
+
+        // Copiar os elementos da matriz original
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < a.cols; j++) {
+                result.set(i, j, a.get(i, j));
+            }
+        }
+
+        // Eliminação Gaussiana
+        for (int i = 0; i < n; i++) {
+            // encontrar a linha com o maior valor absoluto na coluna i
+            int maxRow = i;
+            for (int k = i + 1; k < n; k++) {
+                if (Math.abs(result.get(k, i)) > Math.abs(result.get(maxRow, i))) {
+                    maxRow = k;
+                }
+            }
+
+            // trocar linhas I e MAX
+            result.swapRows(i, maxRow);
+
+            // Tornar os elementos abaixo do pivô zeros
+            for (int k = i + 1; k < n; k++) {
+                double factor = result.get(k, i) / result.get(i, i);
+                for (int j = i; j < a.cols; j++) {
+                    result.set(k, j, result.get(k, j) - factor * result.get(i, j));
+                }
+            }
+        }
+        return result;
+    }
+
+    //  solve (roger)
+    public static Matrix solve(Matrix a) {
+        int n = a.rows;
+        Matrix result = gauss(a);
+
+        // Retro-substituição (Gauss-Jordan)
+        for (int i = n - 1; i >= 0; i--) {
+            double pivot = result.get(i, i);
+            for (int j = i; j < a.cols; j++) {
+                result.set(i, j, result.get(i, j) / pivot);
+            }
+            for (int k = i - 1; k >= 0; k--) {
+                double factor = result.get(k, i);
+                for (int j = i; j < a.cols; j++) {
+                    result.set(k, j, result.get(k, j) - factor * result.get(i, j));
+                }
+            }
+        }
+        return result;
+    }
+}
